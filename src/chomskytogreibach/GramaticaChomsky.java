@@ -78,21 +78,45 @@ public class GramaticaChomsky extends Exception {
         }
     }
     
-    //Funcion que define la primera operacion basica para convertir GC -> GG
-    //A → Bα ,B → β1 , B → β2 , B → β3
-    //Pasamos a
-    //A → β1α A → β2α A → β3α
+    /*
+        @params String Ak - Generador
+        @params String Aj - Produccion a eliminar
+        @returns Elimina Ak -> Aj alpha  y para cada producción B -> beta ===> añade Ak -> beta alpha
+    */
     
-    public void ELIMINA1(String generador)
+    public void ELIMINA1(String Ak,String Aj)
     {
-
+        String A = this.aliasNumToGen.get(Integer.valueOf(Ak));
+        String B = this.aliasNumToGen.get(Integer.valueOf(Aj));
         
+        ArrayList<String> producciones = this.producciones1.get(A);
+        int i = 0;
+        while(!String.valueOf(producciones.get(i).charAt(0)).equals(B))
+             i++;
+        
+        //1. ELiminar A -> B alpha
+        String alpha = this.producciones1.get(A).get(i).replace(B, "");
+        String alphaAlias = this.produccionesAlias.get(Ak).get(i).replace(Aj, "");
+        this.producciones1.get(A).remove(i);
+        this.produccionesAlias.get(Ak).remove(i);
+    //    this.produccionesAlias.get(Ak).remove(i);
+        
+        //2. Para cada produccion B -> beta
+        // 2.1 Añadir A -> beta alpha
+        producciones = this.producciones1.get(B);
+        ArrayList<String> produccionesAlias = this.produccionesAlias.get(Aj);
+        for(int j=0;j<producciones.size();j++)
+        {
+            this.producciones1.get(A).add(producciones.get(j) + alpha);
+            this.produccionesAlias.get(Ak).add(produccionesAlias.get(j)+ alphaAlias);
+        
+        }
         
     }
     
     public void CNFtoGNF()
     {
-      //  for(Map.Entry<String,ArrayList<String>> entry: produccionesAlias.entrySet())
+        //for(Map.Entry<String,ArrayList<String>> entry: produccionesAlias.entrySet())
             
 
     }
