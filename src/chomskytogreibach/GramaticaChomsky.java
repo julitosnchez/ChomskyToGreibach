@@ -148,8 +148,14 @@ public class GramaticaChomsky extends Exception {
                 out += "A"+entry.getKey() + " -> ";
                 if(entry.getValue().get(i).length() == 1)
                     out += entry.getValue().get(i)+"\n";
-                else
-                    out += "A" + String.valueOf(entry.getValue().get(i).charAt(0)) + " " + "A" + String.valueOf(entry.getValue().get(i).charAt(1)) + "\n";
+                else{
+                    for(int j=0; j < entry.getValue().get(i).length(); j++)
+                        if(isTerminal(entry.getValue().get(i).charAt(j)))
+                            out += String.valueOf(entry.getValue().get(i).charAt(j)) + " ";
+                        else
+                            out += "A" + String.valueOf(entry.getValue().get(i).charAt(j)) + " ";
+                    out += "\n";
+                }
             }
         }
         
