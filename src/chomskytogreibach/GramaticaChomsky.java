@@ -16,6 +16,7 @@ import java.util.Map;
 public class GramaticaChomsky extends Exception {
     
     Map<String,ArrayList<String>> producciones1; //Producciones de tipo 1 (del tipo A -> BC tal que A,B,C pertenecen NT
+    //Cada posicion del Array de string es un "PAQUETE" con la produccion, ejemplo si A -> BC, ArrayList<String> (0) = "BC"
     Map<String,ArrayList<String>> produccionesAlias;
 
     Map<String,Integer> alias;
@@ -78,21 +79,74 @@ public class GramaticaChomsky extends Exception {
         }
     }
     
-    //Funcion que define la primera operacion basica para convertir GC -> GG
-    //A → Bα ,B → β1 , B → β2 , B → β3
-    //Pasamos a
-    //A → β1α A → β2α A → β3α
+    /*
+        @params String Ak - Generador
+        @params String Aj - Produccion a eliminar
+        @returns Elimina Ak -> Aj alpha  y para cada producción B -> beta ===> añade Ak -> beta alpha
+    */
     
-    public void ELIMINA1(String generador)
+    public void ELIMINA1(String Ak,String Aj)
     {
-
+        String A = this.aliasNumToGen.get(Integer.valueOf(Ak));
+        String B = this.aliasNumToGen.get(Integer.valueOf(Aj));
         
+        ArrayList<String> producciones = this.producciones1.get(A);
+        int i = 0;
+        while(!String.valueOf(producciones.get(i).charAt(0)).equals(B))
+             i++;
         
+        //1. ELiminar A -> B alpha
+        String alpha = this.producciones1.get(A).get(i).replace(B, "");
+        String alphaAlias = this.produccionesAlias.get(Ak).get(i).replace(Aj, "");
+        this.producciones1.get(A).remove(i);
+        this.produccionesAlias.get(Ak).remove(i);
+    //    this.produccionesAlias.get(Ak).remove(i);
+        
+        //2. Para cada produccion B -> beta
+        // 2.1 Añadir A -> beta alpha
+        producciones = this.producciones1.get(B);
+        ArrayList<String> produccionesAlias = this.produccionesAlias.get(Aj);
+        for(int j=0;j<producciones.size();j++)
+        {
+            this.producciones1.get(A).add(producciones.get(j) + alpha);
+            this.produccionesAlias.get(Ak).add(produccionesAlias.get(j)+ alphaAlias);
+        
+        }
+        
+    }
+    
+    
+    public void ELIMINA2(String generador)
+    {
+        String generadorLetra = this.aliasNumToGen.get(Integer.valueOf(generador));
+        ArrayList<String> producido = this.producciones1.get(generadorLetra);
+        ArrayList<String> producidoAlias = this.produccionesAlias.get(generador);
+        int nIter = producido.size();
+        for(int i=0;i<nIter;i++)
+            if(generador.equals(String.valueOf(producidoAlias.get(i).charAt(0))))
+            {
+                //A -> A alpha
+                //Nos quedamos con alpha reemplazando A por vacío
+                String alpha = producido.get(i).replace(String.valueOf(producido.get(i).charAt(0)),"");
+                String alphaAlias = producidoAlias.get(i).replace(generador, "");
+                this.produccionesAlias.get(generador).remove(i);
+                this.producciones1.get(generadorLetra).remove(i);
+                //Añadimos BA -> alpha
+                ArrayList<String> produccionesB = new ArrayList(),produccionesBalias = new ArrayList();
+                produccionesB.add(alpha);produccionesBalias.add(alphaAlias);
+                produccionesB.add(alpha+"B"+"sub"+generadorLetra);produccionesBalias.add(alphaAlias+"B"+generador);
+                this.producciones1.put("Bsub"+generadorLetra,produccionesB);
+                this.produccionesAlias.put("B"+generador, produccionesBalias);
+            }
+            else{
+                this.producciones1.get(generadorLetra).add(producido.get(i)+"Bsub"+generadorLetra);
+                this.produccionesAlias.get(generador).add(producidoAlias.get(i)+"B"+generador);
+            }
     }
     
     public void CNFtoGNF()
     {
-      //  for(Map.Entry<String,ArrayList<String>> entry: produccionesAlias.entrySet())
+        //for(Map.Entry<String,ArrayList<String>> entry: produccionesAlias.entrySet())
             
 
     }
@@ -121,13 +175,24 @@ public class GramaticaChomsky extends Exception {
         for(Map.Entry<String,ArrayList<String>> entry: produccionesAlias.entrySet()){
             for(int i = 0; i<entry.getValue().size();i++)
             {
-                out += "A"+entry.getKey() + " -> ";
-                if(entry.getValue().get(i).length() == 1)
-                    out += entry.getValue().get(i)+"\n";
+                if(String.valueOf(entry.getKey().charAt(0)).equals("B"))
+                    out += entry.getKey() + " -> ";
                 else
-                    out += "A" + String.valueOf(entry.getValue().get(i).charAt(0)) + " " + "A" + String.valueOf(entry.getValue().get(i).charAt(1)) + "\n";
+                    out += "A"+entry.getKey() + " -> ";
+
+                for(int j=0; j < entry.getValue().get(i).length(); j++)
+                        if(isTerminal(entry.getValue().get(i).charAt(j)))
+                            out += String.valueOf(entry.getValue().get(i).charAt(j)) + " ";
+                        else if(String.valueOf(entry.getValue().get(i).charAt(j)).equals("B"))
+                        {
+                            out += String.valueOf(entry.getValue().get(i).charAt(j)) + String.valueOf(entry.getValue().get(i).charAt(j+1));
+                            j = j+1;
+                        } else
+                            out += "A" + String.valueOf(entry.getValue().get(i).charAt(j)) + " ";
+                    out += "\n";
+                }
             }
-        }
+        
         
         return out;
     }
