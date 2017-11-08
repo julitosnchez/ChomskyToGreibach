@@ -96,8 +96,8 @@ public class GramaticaChomsky extends Exception {
              i++;
         
         //1. ELiminar A -> B alpha
-        String alpha = this.producciones1.get(A).get(i).replace(B, "");
-        String alphaAlias = this.produccionesAlias.get(Ak).get(i).replace(Aj, "");
+        String alpha = producciones.get(i).replaceFirst(B, "");
+        String alphaAlias = this.produccionesAlias.get(Ak).get(i).replaceFirst(Aj, "");
         this.producciones1.get(A).remove(i);
         this.produccionesAlias.get(Ak).remove(i);
     //    this.produccionesAlias.get(Ak).remove(i);
@@ -123,12 +123,12 @@ public class GramaticaChomsky extends Exception {
         ArrayList<String> producidoAlias = this.produccionesAlias.get(generador);
         int nIter = producido.size();
         for(int i=0;i<nIter;i++)
-            if(generador.equals(String.valueOf(producidoAlias.get(i).charAt(0))))
+            if(generador.equals(String.valueOf(producidoAlias.get(i).charAt(0)))) //Si A -> A loquesea
             {
                 //A -> A alpha
                 //Nos quedamos con alpha reemplazando A por vacío
-                String alpha = producido.get(i).replace(String.valueOf(producido.get(i).charAt(0)),"");
-                String alphaAlias = producidoAlias.get(i).replace(generador, "");
+                String alpha = producido.get(i).replaceFirst(String.valueOf(producido.get(i).charAt(0)),"");
+                String alphaAlias = producidoAlias.get(i).replaceFirst(generador, "");
                 this.produccionesAlias.get(generador).remove(i);
                 this.producciones1.get(generadorLetra).remove(i);
                 //Añadimos BA -> alpha
@@ -185,7 +185,7 @@ public class GramaticaChomsky extends Exception {
                             out += String.valueOf(entry.getValue().get(i).charAt(j)) + " ";
                         else if(String.valueOf(entry.getValue().get(i).charAt(j)).equals("B"))
                         {
-                            out += String.valueOf(entry.getValue().get(i).charAt(j)) + String.valueOf(entry.getValue().get(i).charAt(j+1));
+                            out += String.valueOf(entry.getValue().get(i).charAt(j)) + String.valueOf(entry.getValue().get(i).charAt(j+1)) + " ";
                             j = j+1;
                         } else
                             out += "A" + String.valueOf(entry.getValue().get(i).charAt(j)) + " ";
