@@ -87,8 +87,17 @@ public class GramaticaChomsky extends Exception {
     
     public void ELIMINA1(String Ak,String Aj)
     {
-        String A = this.aliasNumToGen.get(Integer.valueOf(Ak));
+        String A = null;
         String B = this.aliasNumToGen.get(Integer.valueOf(Aj));
+        
+        if(Integer.valueOf(Ak) > 0)
+        { 
+            A = this.aliasNumToGen.get(Integer.valueOf(Ak));
+            
+        } else {
+            String num = Ak.replace("-", "");
+            A = "Bsub"+ this.aliasNumToGen.get(Integer.valueOf(num));
+        }
         
         ArrayList<String> producciones = this.producciones1.get(A);
         int i = 0;
@@ -100,7 +109,6 @@ public class GramaticaChomsky extends Exception {
         String alphaAlias = this.produccionesAlias.get(Ak).get(i).replaceFirst(Aj, "");
         this.producciones1.get(A).remove(i);
         this.produccionesAlias.get(Ak).remove(i);
-    //    this.produccionesAlias.get(Ak).remove(i);
         
         //2. Para cada produccion B -> beta
         // 2.1 Añadir A -> beta alpha
@@ -134,13 +142,13 @@ public class GramaticaChomsky extends Exception {
                 //Añadimos BA -> alpha
                 ArrayList<String> produccionesB = new ArrayList(),produccionesBalias = new ArrayList();
                 produccionesB.add(alpha);produccionesBalias.add(alphaAlias);
-                produccionesB.add(alpha+"B"+"sub"+generadorLetra);produccionesBalias.add(alphaAlias+"B"+generador);
+                produccionesB.add(alpha+"B"+"sub"+generadorLetra);produccionesBalias.add(alphaAlias+"-"+generador);
                 this.producciones1.put("Bsub"+generadorLetra,produccionesB);
-                this.produccionesAlias.put("B"+generador, produccionesBalias);
+                this.produccionesAlias.put("-"+generador, produccionesBalias);
             }
             else{
                 this.producciones1.get(generadorLetra).add(producido.get(i)+"Bsub"+generadorLetra);
-                this.produccionesAlias.get(generador).add(producidoAlias.get(i)+"B"+generador);
+                this.produccionesAlias.get(generador).add(producidoAlias.get(i)+"-"+generador);
             }
     }
     
@@ -175,17 +183,21 @@ public class GramaticaChomsky extends Exception {
         for(Map.Entry<String,ArrayList<String>> entry: produccionesAlias.entrySet()){
             for(int i = 0; i<entry.getValue().size();i++)
             {
-                if(String.valueOf(entry.getKey().charAt(0)).equals("B"))
-                    out += entry.getKey() + " -> ";
-                else
-                    out += "A"+entry.getKey() + " -> ";
+                String p = entry.getKey();
+                if(Integer.valueOf(p) > 0)
+                    out += "A" + entry.getKey() + " -> ";
+                else {
+                    p = p.replace("-", "");
+                    out += "B"+p + " -> ";
+                }
+                
 
                 for(int j=0; j < entry.getValue().get(i).length(); j++)
                         if(isTerminal(entry.getValue().get(i).charAt(j)))
                             out += String.valueOf(entry.getValue().get(i).charAt(j)) + " ";
-                        else if(String.valueOf(entry.getValue().get(i).charAt(j)).equals("B"))
+                        else if(String.valueOf(entry.getValue().get(i).charAt(j)).equals("-"))
                         {
-                            out += String.valueOf(entry.getValue().get(i).charAt(j)) + String.valueOf(entry.getValue().get(i).charAt(j+1)) + " ";
+                            out += "B" + String.valueOf(entry.getValue().get(i).charAt(j+1)) + " ";
                             j = j+1;
                         } else
                             out += "A" + String.valueOf(entry.getValue().get(i).charAt(j)) + " ";
