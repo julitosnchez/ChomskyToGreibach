@@ -8,6 +8,7 @@ package chomskytogreibach;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import javafx.util.Pair;
 
 /**
  *
@@ -154,7 +155,66 @@ public class GramaticaChomsky extends Exception {
     
     public void CNFtoGNF()
     {
-        //for(Map.Entry<String,ArrayList<String>> entry: produccionesAlias.entrySet())
+        boolean otraPasada = true;
+        ArrayList<Pair<String,ArrayList<String> > > arrayProduccionesInversa = new ArrayList<>();
+        
+        while(otraPasada){
+            
+            otraPasada = false;
+            arrayProduccionesInversa.clear();
+            
+            for(Map.Entry<String,ArrayList<String>> entry: produccionesAlias.entrySet())
+            {
+               ArrayList<String> producido = entry.getValue();
+               Pair<String,ArrayList<String> > par = new Pair<String,ArrayList<String> >(entry.getKey(),producido);
+               arrayProduccionesInversa.add(par);
+              for(int i=0;i<producido.size();i++)
+              {
+                   String primeraProduccion = null;
+                  if(!isTerminal(producido.get(i).charAt(0)))
+                  {
+                      primeraProduccion = String.valueOf(producido.get(i).charAt(0));
+                      if(Integer.valueOf(entry.getKey()) > (Integer.valueOf(primeraProduccion)) && otraPasada == false)
+                     {
+                           this.ELIMINA1(entry.getKey(), primeraProduccion);
+                            otraPasada = true;
+                            break;
+                     }
+                      if(Integer.valueOf(entry.getKey()).equals(Integer.valueOf(primeraProduccion)) && otraPasada == false)
+                      {
+                          this.ELIMINA2(entry.getKey());
+                            otraPasada = true;
+                            break;
+                      }
+                 }
+            }
+              if(otraPasada == true)
+                  break;
+         }
+            
+    }
+        otraPasada = true;
+        while(otraPasada){
+            otraPasada = false;
+        for(int i=arrayProduccionesInversa.size()-1;i >= 0;i--)
+        {
+            String productor = arrayProduccionesInversa.get(i).getKey();
+            ArrayList<String> producido = arrayProduccionesInversa.get(i).getValue();
+            for(int j=0;j<producido.size();j++)
+            {
+                  String primeraProduccion = null;
+                  if(!isTerminal(producido.get(j).charAt(0)) && producido.get(j).charAt(0) != '-')
+                  {
+                      primeraProduccion = String.valueOf(producido.get(j).charAt(0));
+                      if(Integer.valueOf(productor) < (Integer.valueOf(primeraProduccion)))
+                     {
+                           this.ELIMINA1(productor, primeraProduccion);
+                            otraPasada = true;
+                     }
+                 }
+            }
+        }
+        }
             
 
     }
