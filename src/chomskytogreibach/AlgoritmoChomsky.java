@@ -13,12 +13,12 @@ import java.util.logging.Logger;
  *
  * @author julitosnchez
  */
-public class prueba extends javax.swing.JFrame {
+public class AlgoritmoChomsky extends javax.swing.JFrame {
     GramaticaChomsky GC;
     /**
      * Creates new form prueba
      */
-    public prueba() {
+    public AlgoritmoChomsky() {
         initComponents();
         GC = new GramaticaChomsky();
         this.alf.setSelected(true);
@@ -232,7 +232,7 @@ public class prueba extends javax.swing.JFrame {
             try {
                 GC.añadeProduccion(generador, generado[i]);
             } catch (Exception ex) {
-                Logger.getLogger(prueba.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(AlgoritmoChomsky.class.getName()).log(Level.SEVERE, null, ex);
                 System.exit(0);
             }
         
@@ -293,20 +293,21 @@ public class prueba extends javax.swing.JFrame {
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(prueba.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(AlgoritmoChomsky.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(prueba.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(AlgoritmoChomsky.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(prueba.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(AlgoritmoChomsky.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(prueba.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(AlgoritmoChomsky.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+        //</editor-fold>
         //</editor-fold>
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new prueba().setVisible(true);
+                new AlgoritmoChomsky().setVisible(true);
             }
         });
     }
