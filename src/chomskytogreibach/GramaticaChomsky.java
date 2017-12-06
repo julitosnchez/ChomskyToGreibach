@@ -8,6 +8,7 @@ package chomskytogreibach;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import javafx.util.Pair;
 
 /**
@@ -21,8 +22,6 @@ public class GramaticaChomsky extends Exception {
     Map<String,ArrayList<String>> produccionesAlias;
 
     Map<String,Integer> alias;
-    Map<Integer,String> aliasNumToGen;
-
     
     public GramaticaChomsky()
     {
@@ -30,7 +29,6 @@ public class GramaticaChomsky extends Exception {
         produccionesAlias = new HashMap<String,ArrayList<String>>();
         
         alias = new HashMap<String,Integer>();
-        aliasNumToGen = new HashMap<Integer,String>();
     }
     
     public boolean isTerminal(char A)
@@ -46,21 +44,39 @@ public class GramaticaChomsky extends Exception {
     
     public void generaAlias(int orden)
     {
-        int i = 1;
+        int tamañoProducciones = producciones1.entrySet().size();
+        ArrayList<Integer> asignados = new ArrayList();
+        int i;
+        if(orden == 0)
+            i = 1;
+        else 
+            i = producciones1.entrySet().size();
         for(Map.Entry<String,ArrayList<String>> entry: producciones1.entrySet())
         {
             if(!alias.containsKey(entry.getKey()))
             {
-                alias.put(entry.getKey(),i);
-                aliasNumToGen.put(i, entry.getKey());
-                i++;
+                if(orden == 2){
+                    Random r = new Random();
+                    int valorRandom = r.nextInt(tamañoProducciones)+1;
+                    while(asignados.contains(valorRandom))
+                        valorRandom = r.nextInt(tamañoProducciones)+1;
+                    alias.put(entry.getKey(), valorRandom);
+                    asignados.add(valorRandom);
+                }
+                else {
+                    alias.put(entry.getKey(),i);
+                    if(orden == 0)
+                        i++;
+                    else if (orden == 1)
+                        i--;
+                }
             }
         }
     }
     
-    public void renombraVariables()
+    public void renombraVariables(int orden)
     {
-        this.generaAlias(0);
+        this.generaAlias(orden);
         for(Map.Entry<String,ArrayList<String>> entry: producciones1.entrySet())
         {
             String generador = Integer.toString(alias.get(entry.getKey()));
@@ -88,67 +104,51 @@ public class GramaticaChomsky extends Exception {
     
     public void ELIMINA1(String Ak,String Aj)
     {
-        String A = null;
-        String B = this.aliasNumToGen.get(Integer.valueOf(Aj));
+        ArrayList<String> producciones = this.produccionesAlias.get(Ak);
         
-        if(Integer.valueOf(Ak) > 0)
-        { 
-            A = this.aliasNumToGen.get(Integer.valueOf(Ak));
-            
-        } else {
-            String num = Ak.replace("-", "");
-            A = "Bsub"+ this.aliasNumToGen.get(Integer.valueOf(num));
-        }
-        
-        ArrayList<String> producciones = this.producciones1.get(A);
         int i = 0;
-        while(!String.valueOf(producciones.get(i).charAt(0)).equals(B))
+        while(!String.valueOf(producciones.get(i).charAt(0)).equals(Aj))
              i++;
         
         //1. ELiminar A -> B alpha
-        String alpha = producciones.get(i).replaceFirst(B, "");
         String alphaAlias = this.produccionesAlias.get(Ak).get(i).replaceFirst(Aj, "");
-        this.producciones1.get(A).remove(i);
         this.produccionesAlias.get(Ak).remove(i);
         
         //2. Para cada produccion B -> beta
         // 2.1 Añadir A -> beta alpha
-        producciones = this.producciones1.get(B);
-        ArrayList<String> produccionesAlias = this.produccionesAlias.get(Aj);
+        producciones = this.produccionesAlias.get(Aj);
         for(int j=0;j<producciones.size();j++)
-        {
-            this.producciones1.get(A).add(producciones.get(j) + alpha);
-            this.produccionesAlias.get(Ak).add(produccionesAlias.get(j)+ alphaAlias);
-        
-        }
-        
+            this.produccionesAlias.get(Ak).add(producciones.get(j)+ alphaAlias);        
     }
     
     
     public void ELIMINA2(String generador)
     {
-        String generadorLetra = this.aliasNumToGen.get(Integer.valueOf(generador));
-        ArrayList<String> producido = this.producciones1.get(generadorLetra);
         ArrayList<String> producidoAlias = this.produccionesAlias.get(generador);
-        int nIter = producido.size();
-        for(int i=0;i<nIter;i++)
+        int nIter = producidoAlias.size();
+        for(int i=nIter-1;i>=0;i--)
             if(generador.equals(String.valueOf(producidoAlias.get(i).charAt(0)))) //Si A -> A loquesea
             {
                 //A -> A alpha
                 //Nos quedamos con alpha reemplazando A por vacío
-                String alpha = producido.get(i).replaceFirst(String.valueOf(producido.get(i).charAt(0)),"");
                 String alphaAlias = producidoAlias.get(i).replaceFirst(generador, "");
                 this.produccionesAlias.get(generador).remove(i);
-                this.producciones1.get(generadorLetra).remove(i);
+                
                 //Añadimos BA -> alpha
-                ArrayList<String> produccionesB = new ArrayList(),produccionesBalias = new ArrayList();
-                produccionesB.add(alpha);produccionesBalias.add(alphaAlias);
-                produccionesB.add(alpha+"B"+"sub"+generadorLetra);produccionesBalias.add(alphaAlias+"-"+generador);
-                this.producciones1.put("Bsub"+generadorLetra,produccionesB);
-                this.produccionesAlias.put("-"+generador, produccionesBalias);
+                ArrayList<String> produccionesBalias = new ArrayList();
+                produccionesBalias.add(alphaAlias);
+                produccionesBalias.add(alphaAlias+"-"+generador);
+                
+                //Añadir Elementos a Bx
+                if(!this.produccionesAlias.containsKey("-"+generador))
+                {
+                    this.produccionesAlias.put("-"+generador, produccionesBalias);
+                } else {                  
+                    this.produccionesAlias.get("-"+generador).add(produccionesBalias.get(0));
+                    this.produccionesAlias.get("-"+generador).add(produccionesBalias.get(1));
+                }
             }
             else{
-                this.producciones1.get(generadorLetra).add(producido.get(i)+"Bsub"+generadorLetra);
                 this.produccionesAlias.get(generador).add(producidoAlias.get(i)+"-"+generador);
             }
     }
@@ -171,7 +171,7 @@ public class GramaticaChomsky extends Exception {
               for(int i=0;i<producido.size();i++)
               {
                    String primeraProduccion = null;
-                  if(!isTerminal(producido.get(i).charAt(0)))
+                  if(!isTerminal(producido.get(i).charAt(0))) //MIRAMOS QUE NO ESTAMOS ANTE A -> d 
                   {
                       primeraProduccion = String.valueOf(producido.get(i).charAt(0));
                       if(Integer.valueOf(entry.getKey()) > (Integer.valueOf(primeraProduccion)) && otraPasada == false)
@@ -196,32 +196,30 @@ public class GramaticaChomsky extends Exception {
         otraPasada = true;
         while(otraPasada){
             otraPasada = false;
-        for(int i=arrayProduccionesInversa.size()-1;i >= 0;i--)
-        {
-            String productor = arrayProduccionesInversa.get(i).getKey();
-            ArrayList<String> producido = arrayProduccionesInversa.get(i).getValue();
-            for(int j=0;j<producido.size();j++)
+            for(int i=arrayProduccionesInversa.size()-1;i >= 0;i--)
             {
-                  String primeraProduccion = null;
-                  if(!isTerminal(producido.get(j).charAt(0)) && producido.get(j).charAt(0) != '-')
-                  {
+                String productor = arrayProduccionesInversa.get(i).getKey();
+                ArrayList<String> producido = arrayProduccionesInversa.get(i).getValue();
+                for(int j=0;j<producido.size();j++)
+                {
+                    String primeraProduccion = null;
+                    if(!isTerminal(producido.get(j).charAt(0)) && producido.get(j).charAt(0) != '-')
+                    {
                       primeraProduccion = String.valueOf(producido.get(j).charAt(0));
                       if(Integer.valueOf(productor) < (Integer.valueOf(primeraProduccion)))
-                     {
-                           this.ELIMINA1(productor, primeraProduccion);
-                            otraPasada = true;
-                     }
-                 }
+                      {
+                        this.ELIMINA1(productor, primeraProduccion);
+                        otraPasada = true;
+                      }
+                    }
+                }
             }
         }
-        }
-            
-
-    }
+}
     
     public void añadeProduccion(String generador,String generado) throws Exception
     {
-        boolean tipo2 = generado.length() == 1;
+        boolean tipo2 = generado.length() == 1; //Es una produccion de la forma A -> a
         
         if(generado.length() > 2 || isTerminal(generador.charAt(0)) || (tipo2 &&  !isTerminal(generado.charAt(0))) || (!tipo2 && (isTerminal(generado.charAt(0)) || isTerminal(generado.charAt(1)))))
             throw new Exception("PRODUCCION NO AÑADIDA CORRECTAMENTE: A -> BC o A -> a");
@@ -269,6 +267,19 @@ public class GramaticaChomsky extends Exception {
         return out;
     }
     
-    
+    public String asignacionesToString()
+    {
+        String out = "";
+        for(Map.Entry<String,Integer> entry: alias.entrySet())
+        {
+            String linea = entry.getKey();
+            linea += " ---> ";
+            linea += "A"+ entry.getValue().toString() + "\n";
+            
+            out += linea;
+        }
+        
+        return out;
+    }
     
 }

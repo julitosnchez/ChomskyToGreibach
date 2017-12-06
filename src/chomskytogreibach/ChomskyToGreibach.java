@@ -38,21 +38,11 @@ public class ChomskyToGreibach {
 
  
         //ESPECIFICAMOS ORDEN
-        // 0 - Orden ALfabetico
-        // 1- Inversa Orden ALfabetico
-          GC.renombraVariables(0);
-//        GC.ELIMINA1("3", "1");
-//        GC.ELIMINA1("3", "2");
-//        GC.ELIMINA2("3");
-//        GC.ELIMINA1("2", "3");
-//        GC.ELIMINA1("1", "2");
-//        GC.ELIMINA1("-3", "1");
-//        GC.ELIMINA1("-3", "1");
-        GC.CNFtoGNF();
+        // 0 - Orden Alfabetico
+        // 1- Inversa Orden Alfabetico
+          GC.renombraVariables(2);
+          GC.CNFtoGNF();
         System.out.println(GC.toString());
-//        GC.ELIMINA2("2");
-//        System.out.println(GC.toString());
-
 
     }
     
