@@ -263,7 +263,6 @@ public class AlgoritmoChomsky extends javax.swing.JFrame {
         GC.CNFtoGNF();
         this.chomsky.setText(GC.toString());
         this.asignaciones.setText(GC.asignacionesToString());
-        this.muestraProducciones.setText("");
         GC = new GramaticaChomsky();
     }//GEN-LAST:event_jButton3ActionPerformed
 
