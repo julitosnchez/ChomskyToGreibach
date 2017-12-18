@@ -33,8 +33,9 @@ public class GramaticaChomsky extends Exception {
     
     public boolean isTerminal(char A)
     {
+        // || symbol == '(' || symbol == ')' || symbol == ',' || symbol == '+' || symbol == '-' || symbol == '/'
         char symbol = A;
-        if(symbol >= 'a' && symbol <= 'z')
+        if(symbol >= 'a' && symbol <= 'z' || symbol == '(' || symbol == ')' || symbol == ',' || symbol == '+' || symbol == '-' || symbol == '/')
             return true;
         return false;
     }
@@ -87,8 +88,18 @@ public class GramaticaChomsky extends Exception {
                 if(g.length()==1) //SImbolo terminal
                     producido.add(g);
                 else { //Sustituimos por sus respectivos nombres
-                    String a = Integer.toString(alias.get(String.valueOf(g.charAt(0))));
-                     a += Integer.toString(alias.get(String.valueOf(g.charAt(1))));
+                    int l = 1;
+                    String valor = String.valueOf(g.charAt(0));
+                    while(!(g.charAt(l) >= 'A' && g.charAt(l) <= 'Z'))
+                    {
+                        valor += String.valueOf(g.charAt(l));
+                        l++;
+                    }
+                    String a = Integer.toString(alias.get(valor));
+                    String segundoValor = String.valueOf(g.charAt(l));
+                    l++;
+                    while(l < g.length()) { segundoValor += String.valueOf(g.charAt(l)); l++; }
+                     a += Integer.toString(alias.get(segundoValor));
                     producido.add(a);
                 }
             }
@@ -221,7 +232,7 @@ public class GramaticaChomsky extends Exception {
     {
         boolean tipo2 = generado.length() == 1; //Es una produccion de la forma A -> a
         
-        if(generado.length() > 2 || isTerminal(generador.charAt(0)) || (tipo2 &&  !isTerminal(generado.charAt(0))) || (!tipo2 && (isTerminal(generado.charAt(0)) || isTerminal(generado.charAt(1)))))
+        if( (generado.length() > 2  && (generado.charAt(1) != '_' && generado.charAt(2) != '_' && generado.charAt(4) != '_')) || isTerminal(generador.charAt(0)) || (tipo2 &&  !isTerminal(generado.charAt(0))) || (!tipo2 && (isTerminal(generado.charAt(0)) || isTerminal(generado.charAt(1)))))
             throw new Exception("PRODUCCION NO AÑADIDA CORRECTAMENTE: A -> BC o A -> a");
         else
             //Existe ya símbolo GENERADOR
@@ -251,7 +262,9 @@ public class GramaticaChomsky extends Exception {
                 
 
                 for(int j=0; j < entry.getValue().get(i).length(); j++)
-                        if(isTerminal(entry.getValue().get(i).charAt(j)))
+                {
+                    String a = String.valueOf(entry.getValue().get(i).charAt(j));
+                        if(isTerminal(entry.getValue().get(i).charAt(j)) && !a.equals("-"))
                             out += String.valueOf(entry.getValue().get(i).charAt(j)) + " ";
                         else if(String.valueOf(entry.getValue().get(i).charAt(j)).equals("-"))
                         {
@@ -259,7 +272,9 @@ public class GramaticaChomsky extends Exception {
                             j = j+1;
                         } else
                             out += "A" + String.valueOf(entry.getValue().get(i).charAt(j)) + " ";
+                }
                     out += "\n";
+                
                 }
             }
         
